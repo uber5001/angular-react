@@ -6,6 +6,7 @@
     "start": "node_modules/react-native/packager/packager.sh"
   },
   "dependencies": {
+    "angular2": "^2.0.0-alpha.25",
     "react-native": "^0.4.4"
   }
 }
