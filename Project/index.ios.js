@@ -5,6 +5,14 @@
 'use strict';
 
 var React = require('react-native');
+
+//required for angular:
+require('traceur/bin/traceur-runtime.js');
+require('reflect-metadata/Reflect.js');
+//var parse5Adapter = require('angular2/src/dom/parse5_adapter.js');
+
+require('angular2/angular2');
+
 var {
   AppRegistry,
   StyleSheet,
