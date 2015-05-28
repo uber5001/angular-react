@@ -9,5 +9,9 @@
     "angular2": "^2.0.0-alpha.25",
     "react-native": "^0.4.4",
     "reflect-metadata": "^0.1.0"
+  },
+  "devDependencies": {
+    "gulp": "^3.8.11",
+    "gulp-shell": "^0.4.1"
   }
 }
