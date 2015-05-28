@@ -1,4 +1,4 @@
-/// <reference path="./node_modules/angular2/atscript/typings/node/node.d.ts"/>
+/// <reference path="../node_modules/angular2/atscript/typings/node/node.d.ts"/>
 
 
 /**
