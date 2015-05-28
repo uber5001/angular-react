@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "angular2": "^2.0.0-alpha.25",
-    "react-native": "^0.4.4"
+    "react-native": "^0.4.4",
+    "reflect-metadata": "^0.1.0"
   }
 }
