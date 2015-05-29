@@ -1,4 +1,8 @@
-/// <reference path="../node_modules/angular2/atscript/typings/node/node.d.ts"/>
+/// <reference path="../node_modules/angular2/angular2.d.ts"/>
+/// <reference path="../angular/modules/angular2/globals.d.ts"/>
+/// <reference path="../angular/modules/angular2/traceur-runtime.d.ts"/>
+/// <reference path="../node_modules//angular2/atscript/typings/node/node.d.ts"/>
+//import angular2 = require ('angular2/angular2');
 
 
 /**
@@ -14,51 +18,22 @@ require('traceur/bin/traceur-runtime.js');
 require('reflect-metadata/Reflect.js');
 //var parse5Adapter = require('angular2/src/dom/parse5_adapter.js');
 
-require('angular2/angular2');
-var Project = React.createClass({
-	render: function() {
-		return (
-			React.createElement(
-				React.View,
-				{style: styles.container},
-				React.createElement(
-					React.Text,
-					{style: styles.welcome},
-					"Welcome to React Native!"
-				),
-				React.createElement(
-					React.Text,
-					{style: styles.instructions},
-					"To get started, edit index.ios.ts"
-				),
-				React.createElement(
-					React.Text,
-					{style: styles.instructions},
-					"Press Cmd+R to reload,\n"
-						+ "Cmd+D or shake for dev menu"
-				)
-			)
-		);
-	}
-});
+import {Component, View, Renderer, bootstrap, bind} from '../node_modules/angular2/angular2';
 
-var styles = React.StyleSheet.create({
-	container: {
-		flex: 1,
-		justifyContent: 'center',
-		alignItems: 'center',
-		backgroundColor: '#F5FCFF',
-	},
-	welcome: {
-		fontSize: 20,
-		textAlign: 'center',
-		margin: 10,
-	},
-	instructions: {
-		textAlign: 'center',
-		color: '#333333',
-		marginBottom: 5,
-	},
-});
+@Component({
+	selector: 'hello-world'
+})
+@View({
+	template: '<h1>Hello World!</h1>'
+})
+class HelloWorldComponent {
+}
 
-React.AppRegistry.registerComponent('Project', () => Project);
+class ReactNativeRenderer extends Renderer {
+}
+
+bootstrap(HelloWorldComponent, [
+	ReactNativeRenderer,
+	bind(Renderer).toAlias(ReactNativeRenderer)
+]);
+
