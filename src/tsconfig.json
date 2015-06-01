@@ -7,6 +7,6 @@
         "sourceMap": true,
         "sourceRoot": ".",
         "target": "ES5",
-        "outDir": "../Project"
+        "outDir": "../dist"
     }
 }
