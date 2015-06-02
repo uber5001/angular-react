@@ -25,10 +25,10 @@ gulp.task('init', shell.task([
 	
 	"tsc -p angular/modules/angular2 --outDir dist/node_modules/angular2",
 	"find dist -name '*.js' -type f -exec sed -i '' -e '$a\\' {} \\;",
-	
+
 	"cp src/angular2package.json dist/node_modules/angular2/package.json",
 
 	"cp -r angular/modules/angular2/ src/angular2/",
 	"cp angular/modules/angular2/*.d.ts src/angular2",
-	"cp -r angular/modules/angular2/typings src/angular2/typings"
+	"cp -r angular/modules/angular2/typings/ src/angular2/typings/"
 ]));
