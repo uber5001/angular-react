@@ -19,23 +19,16 @@ gulp.task('init', shell.task([
 	"git submodule update --init --recursive",
 	"tsd reinstall --config angular/modules/angular2/tsd.json",
 	"react-native init dist",
-	"cd dist && npm install --save rx",
-	"cd dist && npm install --save traceur",
-	"cd dist && npm install --save reflect-metadata",
-	"cd dist && npm install --save zone.js",
-	"cd dist && npm install --save rtts_assert",
-	"cd dist && npm install --save parse5",
-	"cd dist && npm install --save css",
-	"cd dist && npm install --save url",
-	"cd dist && npm install --save angular2",
-	"cp -r angular/modules/angular2/ src/angular2/",
-	"tsc -p src",
-	"rm -r dist/node_modules/angular2",
-	"mv dist/angular2 dist/node_modules/angular2",
-	"cp src/angular2package.json dist/node_modules/angular2/package.json",
-	"rm -r src/angular2",
+	
+	"cp src/distPackage.json dist/package.json",
+	"cd dist && npm install",
+	
+	"tsc -p angular/modules/angular2 --outDir dist/node_modules/angular2",
 	"find dist -name '*.js' -type f -exec sed -i '' -e '$a\\' {} \\;",
-	"cp -r dist/node_modules/angular2 src/angular2",
+	
+	"cp src/angular2package.json dist/node_modules/angular2/package.json",
+
+	"cp -r angular/modules/angular2/ src/angular2/",
 	"cp angular/modules/angular2/*.d.ts src/angular2",
 	"cp -r angular/modules/angular2/typings src/angular2/typings"
 ]));

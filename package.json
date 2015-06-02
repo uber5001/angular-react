@@ -7,7 +7,7 @@
   },
   "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "postinstall": "gulp init"
   },
   "repository": {
     "type": "git",
@@ -16,8 +16,5 @@
   "bugs": {
     "url": "https://github.com/uber5001/angular-react/issues"
   },
-  "homepage": "https://github.com/uber5001/angular-react#readme",
-  "scripts": {
-	"postinstall": "gulp init"
-  }
+  "homepage": "https://github.com/uber5001/angular-react#readme"
 }
