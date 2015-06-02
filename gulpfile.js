@@ -9,13 +9,11 @@ gulp.task('watchbuild', function() {
 
 gulp.task('build', shell.task([
 	'tsc -p src',
-	'rm -r dist/node_modules/angular2',
-	'mv dist/angular2 dist/node_modules/angular2',
-	'cp src/angular2package.json dist/node_modules/angular2/package.json',
-	"find dist -name '*.js' -type f -exec sed -i '' -e '$a\\' {} \\;",
+	"find dist -not \\( -path dist/node_modules -prune \\) -name '*.js' -type f -exec sed -i '' -e '$a\\' {} \\;",
 ]));
 
 gulp.task('init', shell.task([
+	"npm install -g gulp",
 	"npm install -g tsd",
 	"npm install -g react-native-cli",
 	"git submodule update --init --recursive",
@@ -37,4 +35,7 @@ gulp.task('init', shell.task([
 	"cp src/angular2package.json dist/node_modules/angular2/package.json",
 	"rm -r src/angular2",
 	"find dist -name '*.js' -type f -exec sed -i '' -e '$a\\' {} \\;",
+	"cp -r dist/node_modules/angular2 src/angular2",
+	"cp angular/modules/angular2/*.d.ts src/angular2",
+	"cp -r angular/modules/angular2/typings src/angular2/typings"
 ]));
