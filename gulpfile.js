@@ -15,19 +15,12 @@ gulp.task('build', shell.task([
 	"find dist -name '*.js' -type f -exec sed -i '' -e '$a\\' {} \\;",
 ]));
 
-gulp.task('copyAngular', shell.task([
-	"cp -r angular/modules/angular2/ src/angular2/"
-]));
-
-gulp.task('tsdAngular', shell.task([
-	"tsd reinstall --config angular/modules/angular2/tsd.json"
-]));
-
-gulp.task('initProject', shell.task([
-	"react-native init dist"
-]));
-
-gulp.task('initDeps', shell.task([
+gulp.task('init', shell.task([
+	"npm install -g tsd",
+	"npm install -g react-native-cli",
+	"git submodule update --init --recursive",
+	"tsd reinstall --config angular/modules/angular2/tsd.json",
+	"react-native init dist",
 	"cd dist && npm install --save rx",
 	"cd dist && npm install --save traceur",
 	"cd dist && npm install --save reflect-metadata",
@@ -37,4 +30,11 @@ gulp.task('initDeps', shell.task([
 	"cd dist && npm install --save css",
 	"cd dist && npm install --save url",
 	"cd dist && npm install --save angular2",
+	"cp -r angular/modules/angular2/ src/angular2/",
+	"tsc -p src",
+	"rm -r dist/node_modules/angular2",
+	"mv dist/angular2 dist/node_modules/angular2",
+	"cp src/angular2package.json dist/node_modules/angular2/package.json",
+	"rm -r src/angular2",
+	"find dist -name '*.js' -type f -exec sed -i '' -e '$a\\' {} \\;",
 ]));
