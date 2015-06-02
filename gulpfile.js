@@ -22,13 +22,15 @@ gulp.task('init', shell.task([
 	
 	"cp src/distPackage.json dist/package.json",
 	"cd dist && npm install",
-	
-	"tsc -p angular/modules/angular2 --outDir dist/node_modules/angular2",
-	"find dist -name '*.js' -type f -exec sed -i '' -e '$a\\' {} \\;",
-
-	"cp src/angular2package.json dist/node_modules/angular2/package.json",
 
 	"cp -r angular/modules/angular2/ src/angular2/",
+	"tsc -p src",
+	"rm -r dist/node_modules/angular2",
+	"mv dist/angular2 dist/node_modules/angular2",
+	"cp src/angular2package.json dist/node_modules/angular2/package.json",
+	"rm -r src/angular2",
+	"find dist -name '*.js' -type f -exec sed -i '' -e '$a\\' {} \\;",
+	"cp -r dist/node_modules/angular2 src/angular2",
 	"cp angular/modules/angular2/*.d.ts src/angular2",
-	"cp -r angular/modules/angular2/typings/ src/angular2/typings/"
+	"cp -r angular/modules/angular2/typings src/angular2/typings"
 ]));
