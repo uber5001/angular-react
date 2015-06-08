@@ -49,34 +49,6 @@ const REACT_NATIVE_COMPONENTS = {
 	"webview": React.WebView,
 }
 
-@Component({
-	selector: 'bar'
-})
-@View({
-	template: '<Text foo="bar">Bar</Text>'
-})
-class BarComponent {
-}
-
-
-@Component({
-	selector: 'foo'
-})
-@View({
-	template:
-		'<View [style]="style" [b]="style" [c]="style">'
-			+ '<Text>Foo</Text>'
-			+ '<Bar></Bar>'
-		+ '</View>',
-	directives: [
-		BarComponent
-	]
-})
-class FooComponent {
-	style = {
-		backgroundColor: "#13579A"
-	};
-}
 
 
 @Component({
@@ -84,16 +56,39 @@ class FooComponent {
 })
 @View({
 	template:
-		'<Text>Hello World!</Text>'
-		+ '<Foo></Foo>'
-		+ '<Bar></Bar>',
-	directives: [
-		FooComponent,
-		BarComponent
-	]
-
+		  "<View [style]='styles.container'>"
+			+ "<Text [style]='styles.welcome'>"
+				+ "Welcome to React Native!"
+			+ "</Text>"
+			+ "<Text [style]='styles.instructions'>"
+				+ "To get started, edit index.ios.js"
+			+ "</Text>"
+			+ "<Text [style]='styles.instructions'>"
+				+ "Press Cmd+R to reload,\n"
+				+ "Cmd+D or shake for dev menu"
+			+ "</Text>"
+		+ "</View>",
+	directives: []
 })
 class HelloWorldComponent {
+	styles = React.StyleSheet.create({
+		container: {
+			flex: 1,
+			justifyContent: 'center',
+			alignItems: 'center',
+			backgroundColor: '#F5FCFF',
+		},
+		welcome: {
+			fontSize: 20,
+			textAlign: 'center',
+			margin: 10,
+		},
+		instructions: {
+			textAlign: 'center',
+			color: '#333333',
+			marginBottom: 5,
+		},
+	});
 }
 
 
