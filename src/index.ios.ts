@@ -53,7 +53,7 @@ const REACT_NATIVE_COMPONENTS = {
 	selector: 'bar'
 })
 @View({
-	template: '<Text>Bar</Text>'
+	template: '<Text foo="bar">Bar</Text>'
 })
 class BarComponent {
 }
@@ -64,7 +64,7 @@ class BarComponent {
 })
 @View({
 	template:
-		'<View someAttr="SomeValue">'
+		'<View [style]="style" [b]="style" [c]="style">'
 			+ '<Text>Foo</Text>'
 			+ '<Bar></Bar>'
 		+ '</View>',
@@ -73,6 +73,9 @@ class BarComponent {
 	]
 })
 class FooComponent {
+	style = {
+		backgroundColor: "#13579A"
+	};
 }
 
 
@@ -81,11 +84,9 @@ class FooComponent {
 })
 @View({
 	template:
-		'<View>'
-			+ '<Text>Hello World!</Text>'
-			+ '<Foo></Foo>'
-			+ '<Bar></Bar>'
-		+ '</View>',
+		'<Text>Hello World!</Text>'
+		+ '<Foo></Foo>'
+		+ '<Bar></Bar>',
 	directives: [
 		FooComponent,
 		BarComponent
@@ -94,8 +95,6 @@ class FooComponent {
 })
 class HelloWorldComponent {
 }
-
-
 
 
 
@@ -114,6 +113,7 @@ class ReactNativeViewRef extends RenderViewRef {
 class ReactNativeView {
 	//hack for application.ts:83's registerApplication
 	boundElements = [];
+	boundElementProperties = [];
 
 	hydrated: boolean;
 
@@ -151,7 +151,8 @@ class ReactNativeView {
 			rootElement = {
 				"children": [
 					this.proto.element
-				]
+				],
+				"name": "root"
 			}
 		} else {
 			var rootElement = this.proto.element;
@@ -169,25 +170,37 @@ class ReactNativeView {
 		//It need a componentType, props, and children.
 
 		var reactComponentType;
-		if (root.className == NG_BINDING_CLASS) {
-			reactComponentType = this.boundElements[bindingIndexRef.value++];
+		if (root.className == NG_BINDING_CLASS && this.boundElements[bindingIndexRef.value]) {
+			reactComponentType = this.boundElements[bindingIndexRef.value];
 		} else {
 			//it's a React Native component
 			reactComponentType = REACT_NATIVE_COMPONENTS[root.name];
 
 			if (reactComponentType === undefined) {
-				console.log("Unexpected custom element: " + root.name, root)
+				if (root.name != 'root') {
+					console.log("%cUnexpected custom element: " + root.name, 'color: #ff0000', root);
+				}
 				//just kidding? It's a custom-named component without any ng-binding associated with it.
 				//We'll just pretend it is a React Native <View>.
 				reactComponentType = React.View;
 			}
 		}
 
-		var props = root.attribs;
+		var props = root.attribs || {};
+		//replace with bound attributes if need be.
+		var boundProperties = this.boundElementProperties[bindingIndexRef.value]
+		for (var i in boundProperties) {
+			props[i] = boundProperties[i];
+		}
+
+
+		if (root.className == NG_BINDING_CLASS) {
+			bindingIndexRef.value++;
+		}
 
 		var children = root.children;
 		var renderedChildren = [];
-		for (var i = 0; i < children.length; i++) {
+		for (var i = <any>0; i < children.length; i++) {
 			var child = children[i];
 			if (child.type == "text") {
 				//React treats strings like HTML's text nodes (not React Native's "Text" Components!)
@@ -242,6 +255,7 @@ class ReactNativeRenderer extends Renderer {
 		var hostView = resolveInternalReactNativeView(hostViewRef);
 		var componentView = resolveInternalReactNativeView(componentViewRef);
 		hostView.boundElements[elementIndex] = componentView.reactComponent;
+		console.log(hostView.boundElements);
 	}
 
 	detachComponentView(hostViewRef: RenderViewRef, boundElementIndex: number,
@@ -269,7 +283,14 @@ class ReactNativeRenderer extends Renderer {
 	}
 
 	setElementProperty(viewRef: RenderViewRef, elementIndex: number, propertyName: string,
-			propertyValue: any) { console.log("setElementProperty", arguments); }
+			propertyValue: any) {
+		console.log("setElementProperty", arguments);
+		var view = resolveInternalReactNativeView(viewRef);
+		if (view.boundElementProperties[elementIndex] === undefined) {
+			view.boundElementProperties[elementIndex] = {};
+		}
+		view.boundElementProperties[elementIndex][propertyName] = propertyValue;
+	}
 
 	callAction(viewRef: RenderViewRef, elementIndex: number, actionExpression: string,
 			actionArgs: any) { console.log("callAction", arguments); }
