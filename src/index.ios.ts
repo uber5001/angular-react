@@ -11,26 +11,93 @@ var parse5Adapter = require('angular2/src/dom/parse5_adapter.js');
 var traceur = require('traceur/bin/traceur-runtime.js');
 require('reflect-metadata/Reflect.js');
 
-import {Component, View, bootstrap, bind, DOCUMENT_TOKEN} from 'angular2/angular2';
+import {Component, View, bootstrap, bind} from 'angular2/angular2';
 import {DOM} from 'angular2/src/dom/dom_adapter';
 
 import {DomProtoView, DomProtoViewRef, resolveInternalDomProtoView} from 'angular2/src/render/dom/view/proto_view';
 import {resolveInternalDomView} from 'angular2/src/render/dom/view/view';
-import {Renderer, RenderProtoViewRef, RenderViewRef} from 'angular2/src/render/api';
+import {Renderer, RenderProtoViewRef, RenderViewRef, EventDispatcher} from 'angular2/src/render/api';
 import {isBlank, BaseException} from 'angular2/src/facade/lang';
 
 import {ShadowDomStrategy} from 'angular2/src/render/dom/shadow_dom/shadow_dom_strategy';
 import {EventManager} from 'angular2/src/render/dom/events/event_manager';
 import {Inject, Injectable} from 'angular2/di';
 
+import {NG_BINDING_CLASS} from 'angular2/src/render/dom/util';
+
+const REACT_NATIVE_COMPONENTS = {
+	"activityindicatorios": React.ActivityIndicatorIOS,
+	"datepickerios": React.DatePickerIOS,
+	"image": React.Image,
+	"listview": React.ListView,
+	"mapview": React.MapView,
+	"navigator": React.Navigator,
+	"navigatorios": React.NavigatorIOS,
+	"pickerios": React.PickerIOS,
+	"scrollview": React.ScrollView,
+	"segmentedcontrolios": React.SegmentedControlIOS,
+	"sliderios": React.SliderIOS,
+	"switchios": React.SwitchIOS,
+	"tabbarios": React.TabBarIOS,
+	"tabbarios.item": React.TabBarIOS.Item,
+	"text": React.Text,
+	"textinput": React.TextInput,
+	"touchablehighlight": React.TouchableHighlight,
+	"touchableopacity": React.TouchableOpacity,
+	"touchablewithoutfeedback": React.TouchableWithoutFeedback,
+	"view": React.View,
+	"webview": React.WebView,
+}
+
+@Component({
+	selector: 'bar'
+})
+@View({
+	template: '<Text>Bar</Text>'
+})
+class BarComponent {
+}
+
+
+@Component({
+	selector: 'foo'
+})
+@View({
+	template:
+		'<View>'
+			+ '<Text>Foo</Text>'
+			+ '<Bar></Bar>'
+		+ '</View>',
+	directives: [
+		BarComponent
+	]
+})
+class FooComponent {
+}
+
+
 @Component({
 	selector: 'hello-world'
 })
 @View({
-		template: '<Text><Text><Text><Text>Hello World!</Text></Text></Text></Text>'
+	template:
+		'<View>'
+			+ '<Text>Hello World!</Text>'
+			+ '<Foo></Foo>'
+			+ '<Bar></Bar>'
+		+ '</View>',
+	directives: [
+		FooComponent,
+		BarComponent
+	]
+
 })
 class HelloWorldComponent {
 }
+
+
+
+
 
 function resolveInternalReactNativeView(viewRef: RenderViewRef) {
 	return (<ReactNativeViewRef>viewRef)._view;
@@ -48,31 +115,107 @@ class ReactNativeView {
 	//hack for application.ts:83's registerApplication
 	boundElements = [];
 
-	reactClass;
-	reactRender;
+	hydrated: boolean;
 
-	constructor(public proto: DomProtoView, isRoot: boolean) {
-		this.reactClass = React.createClass({
+	reactComponent;
+
+	renderTree;
+
+	constructor(public proto: DomProtoView, public isRoot: boolean) {
+		this.hydrated = false;
+		// !
+		var self = this;
+		this.reactComponent = React.createClass({
 			render: function() {
-				return (
-					React.createElement(React.Text, null, "Woooooo!")
-				);
+				return self.render();
 			}
 		});
-		if (isRoot) {
-			React.AppRegistry.registerComponent('dist', () => this.reactClass);
+	}
+
+	hydrate() {
+		//TODO: This only works because React renders async.
+		//      If it hydrates before alldescendants are attached,
+		//      react won't know to re-render.
+		if (this.isRoot) {
+			React.AppRegistry.registerComponent('dist', () => this.reactComponent);
 		}
+	}
+
+	dehydrate() {
+
+	}
+
+	render() {
+		var rootElement;
+		if (this.isRoot) {
+			rootElement = {
+				"children": [
+					this.proto.element
+				]
+			}
+		} else {
+			var rootElement = this.proto.element;
+			while (rootElement.type != "root") {
+				rootElement = rootElement.children[0];
+			}
+		}
+		return (
+			this._dfsRender(rootElement)
+		);
+	}
+
+	_dfsRender(root, bindingIndexRef = { value: 0 }) {
+		//One node rendered per call thru React.createElement
+		//It need a componentType, props, and children.
+
+		var reactComponentType;
+		if (root.className == NG_BINDING_CLASS) {
+			reactComponentType = this.boundElements[bindingIndexRef.value++];
+		} else {
+			//it's a React Native component
+			reactComponentType = REACT_NATIVE_COMPONENTS[root.name];
+
+			if (reactComponentType === undefined) {
+				console.log("Unexpected custom element: " + root.name, root)
+				//just kidding? It's a custom-named component without any ng-binding associated with it.
+				//We'll just pretend it is a React Native <View>.
+				reactComponentType = React.View;
+			}
+		}
+
+		//TODO: props
+		var props = null;
+
+		var children = root.children;
+		var renderedChildren = [];
+		for (var i = 0; i < children.length; i++) {
+			var child = children[i];
+			if (child.type == "text") {
+				//React treats strings like HTML's text nodes (not React Native's "Text" Components!)
+				renderedChildren[i] = child.data;
+				console.log(child.text);
+			} else if (child.type == "tag") {
+				//assume it must be a react native element
+				renderedChildren[i] = this._dfsRender(child, bindingIndexRef);
+			} else {
+				throw "No handler for node type: " + child.type;
+			}
+		}
+
+		//NOTE: this is only ok because we aren't using renderedChildren again.
+		var args = renderedChildren;
+		args.unshift(props);
+		args.unshift(reactComponentType);
+
+		return React.createElement.apply(React, args);
 	}
 }
 
-@Injectable()
 class ReactNativeRenderer extends Renderer {
-	_document;
 
-	constructor(@Inject(DOCUMENT_TOKEN) document) {
+	constructor() {
 		super();
 		console.log("constructor", arguments);
-		this._document = document;
 	}
 
 	createRootHostView(hostProtoViewRef: RenderProtoViewRef): RenderViewRef {
@@ -96,7 +239,12 @@ class ReactNativeRenderer extends Renderer {
 	}
 
 	attachComponentView(hostViewRef: RenderViewRef, elementIndex: number,
-			componentViewRef: RenderViewRef) { console.log("attachComponentView", arguments); }
+			componentViewRef: RenderViewRef) {
+		console.log("attachComponentView", arguments);
+		var hostView = resolveInternalReactNativeView(hostViewRef);
+		var componentView = resolveInternalReactNativeView(componentViewRef);
+		hostView.boundElements[elementIndex] = componentView.reactComponent;
+	}
 
 	detachComponentView(hostViewRef: RenderViewRef, boundElementIndex: number,
 			componentViewRef: RenderViewRef) { console.log("detachComponentView", arguments); }
@@ -107,9 +255,20 @@ class ReactNativeRenderer extends Renderer {
 	detachViewInContainer(parentViewRef: RenderViewRef, boundElementIndex: number, atIndex: number,
 			viewRef: RenderViewRef) { console.log("detachViewInContainer", arguments); }
 
-	hydrateView(viewRef: RenderViewRef) { console.log("hydrateView", arguments); }
+	hydrateView(viewRef: RenderViewRef) {
+		console.log("hydrateView", arguments);
+		var view = resolveInternalReactNativeView(viewRef);
+		if (view.hydrated) throw new BaseException('The view is already hydrated.');
+		view.hydrated = true;
+		view.hydrate();
+	}
 
-	dehydrateView(viewRef: RenderViewRef) { console.log("dehydrateView", arguments); }
+	dehydrateView(viewRef: RenderViewRef) {
+		console.log("dehydrateView", arguments);
+		var view = resolveInternalReactNativeView(viewRef);
+		view.hydrated = false;
+		view.dehydrate();
+	}
 
 	setElementProperty(viewRef: RenderViewRef, elementIndex: number, propertyName: string,
 			propertyValue: any) { console.log("setElementProperty", arguments); }
@@ -119,7 +278,7 @@ class ReactNativeRenderer extends Renderer {
 
 	setText(viewRef: RenderViewRef, textNodeIndex: number, text: string) { console.log("setText", arguments); }
 
-	setEventDispatcher(viewRef: RenderViewRef, dispatcher: any /*api.EventDispatcher*/) { console.log("setEventDispatcher", arguments); }
+	setEventDispatcher(viewRef: RenderViewRef, dispatcher: EventDispatcher) { console.log("setEventDispatcher", arguments); }
 
 	_createView(protoView: DomProtoView, isRoot: boolean): ReactNativeView {
 		// var viewRootNodes = [inplaceElement];
