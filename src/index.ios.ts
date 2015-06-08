@@ -64,7 +64,7 @@ class BarComponent {
 })
 @View({
 	template:
-		'<View>'
+		'<View someAttr="SomeValue">'
 			+ '<Text>Foo</Text>'
 			+ '<Bar></Bar>'
 		+ '</View>',
@@ -183,8 +183,7 @@ class ReactNativeView {
 			}
 		}
 
-		//TODO: props
-		var props = null;
+		var props = root.attribs;
 
 		var children = root.children;
 		var renderedChildren = [];
@@ -193,7 +192,6 @@ class ReactNativeView {
 			if (child.type == "text") {
 				//React treats strings like HTML's text nodes (not React Native's "Text" Components!)
 				renderedChildren[i] = child.data;
-				console.log(child.text);
 			} else if (child.type == "tag") {
 				//assume it must be a react native element
 				renderedChildren[i] = this._dfsRender(child, bindingIndexRef);
