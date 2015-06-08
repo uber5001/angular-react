@@ -16,22 +16,21 @@ import {Component, View, bootstrap, bind, Renderer} from 'angular2/angular2';
 import {ReactNativeRenderer} from './renderer'
 
 @Component({
-	selector: 'hello-world'
+	selector: 'hello-world',
+	hostProperties: {
+		'styles.container': 'style'
+	}
 })
 @View({
 	template:
-		  "<View [style]='styles.container'>"
-			+ "<Text [style]='styles.welcome'>"
-				+ "Welcome to React Native!"
-			+ "</Text>"
-			+ "<Text [style]='styles.instructions'>"
-				+ "To get started, edit index.ios.js"
-			+ "</Text>"
-			+ "<Text [style]='styles.instructions'>"
-				+ "Press Cmd+R to reload,\n"
-				+ "Cmd+D or shake for dev menu"
-			+ "</Text>"
-		+ "</View>",
+`<Text [style]='styles.welcome'>
+	Welcome to React Native!
+</Text><Text [style]='styles.instructions'>
+	To get started, edit index.ios.js
+</Text><Text [style]='styles.instructions'>
+	Press Cmd+R to reload,\n
+	Cmd+D or shake for dev menu
+</Text>`,
 	directives: []
 })
 class HelloWorldComponent {
