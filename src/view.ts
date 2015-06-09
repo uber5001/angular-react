@@ -57,7 +57,7 @@ export class ReactNativeView {
 		var self = this;
 		this.reactComponent = React.createClass({
 			render: function() {
-				return self.render();
+				return self.render(this);
 			}
 		});
 	}
@@ -75,7 +75,7 @@ export class ReactNativeView {
 
 	}
 
-	render() {
+	render(reactThis) {
 		var rootElement;
 		if (this.isRoot) {
 			rootElement = {
@@ -91,16 +91,19 @@ export class ReactNativeView {
 			}
 		}
 		return (
-			this._dfsRender(rootElement)
-			);
+			this._dfsRender(reactThis, rootElement)
+		);
 	}
 
-	_dfsRender(root, bindingIndexRef = { value: 0 }) {
+	_dfsRender(reactThis, root, bindingIndexRef = { value: 0 }) {
 		//One node rendered per call thru React.createElement
 		//It need a componentType, props, and children.
 
+		var props = root.attribs || {};
+
 		var reactComponentType;
-		if (root.className == NG_BINDING_CLASS && this.boundElements[bindingIndexRef.value]) {
+		var isBound = (root.className == NG_BINDING_CLASS)
+		if (isBound && this.boundElements[bindingIndexRef.value]) {
 			reactComponentType = this.boundElements[bindingIndexRef.value];
 		} else {
 			//it's a React Native component
@@ -113,14 +116,18 @@ export class ReactNativeView {
 				//just kidding? It's a custom-named component without any ng-binding associated with it.
 				//We'll just pretend it is a React Native <View>.
 				reactComponentType = React.View;
+				for (var i in reactThis.props) {
+					props[i] = reactThis.props[i];
+				}
 			}
 		}
 
-		var props = root.attribs || {};
 		//replace with bound attributes if need be.
-		var boundProperties = this.boundElementProperties[bindingIndexRef.value]
-		for (var i in boundProperties) {
-			props[i] = boundProperties[i];
+		if (isBound) {
+			var boundProperties = this.boundElementProperties[bindingIndexRef.value]
+			for (var i in boundProperties) {
+				props[i] = boundProperties[i];
+			}
 		}
 
 
@@ -137,7 +144,7 @@ export class ReactNativeView {
 				renderedChildren[i] = child.data;
 			} else if (child.type == "tag") {
 				//assume it must be a react native element
-				renderedChildren[i] = this._dfsRender(child, bindingIndexRef);
+				renderedChildren[i] = this._dfsRender(reactThis, child, bindingIndexRef);
 			} else {
 				throw "No handler for node type: " + child.type;
 			}
