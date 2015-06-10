@@ -4,64 +4,35 @@
  */
 'use strict';
 
-var React = require('react-native');
+require('RCTDeviceEventEmitter')
+var AppRegistry = require('AppRegistry');
+console.log(AppRegistry);
 
-//required for angular:
-var parse5Adapter = require('angular2/src/dom/parse5_adapter.js');
-require('traceur/bin/traceur-runtime.js');
-require('reflect-metadata/Reflect.js');
+var NativeModules = require('NativeModules');
+console.log(NativeModules);
+var ReactNativeTagHandles = require('ReactNativeTagHandles');
 
-import {Component, View, bootstrap, bind, Renderer} from 'angular2/angular2';
+var ReactUpdates = require('ReactUpdates');
+ReactUpdates.injection.injectBatchingStrategy(require('ReactDefaultBatchingStrategy'));
+ReactUpdates.ReactReconcileTransaction = require('ReactReconcileTransaction');
 
-import {ReactNativeRenderer} from './renderer'
+AppRegistry.runApplication = function() {
 
-@Component({
-	selector: 'hello-world',
-	hostProperties: {
-		'styles.container': 'style'
-	}
-})
-@View({
-	template:
-		  "<Text [style]='styles.welcome'>"
-			+ "Welcome to React Native!"
-		+ "</Text><Text [style]='styles.instructions'>"
-			+ "To get started, edit index.ios.js"
-		+ "</Text><Text [style]='styles.instructions'>"
-			+ "Press Cmd+R to reload,\n"
-			+ "Cmd+D or shake for dev menu"
-		+ "</Text>",
-	directives: []
-})
-class HelloWorldComponent {
-	styles = React.StyleSheet.create({
-		container: {
-			flex: 1,
-			justifyContent: 'center',
-			alignItems: 'center',
-			backgroundColor: '#F5FCFF',
-		},
-		welcome: {
-			fontSize: 20,
-			textAlign: 'center',
-			margin: 10,
-		},
-		instructions: {
-			textAlign: 'center',
-			color: '#333333',
-			marginBottom: 5,
-		},
-	});
+	var tagRoot = ReactNativeTagHandles.allocateTag();
+	NativeModules.UIManager.createView(tagRoot, "RCTView", { "position": "absolute", "left": 0, "top": 0, "right": 0, "bottom": 0 });
+
+	var tagView = ReactNativeTagHandles.allocateTag();
+	NativeModules.UIManager.createView(tagView, "RCTView", { "position": "absolute", "left": 0, "top": 0, "right": 0, "bottom": 0 });
+
+	var tagText = ReactNativeTagHandles.allocateTag();
+	NativeModules.UIManager.createView(tagText, "RCTText", { accessible: true, isHighlighted: false });
+
+	var tagRawText = ReactNativeTagHandles.allocateTag();
+	NativeModules.UIManager.createView(tagRawText, "RCTRawText", { text: "foobar---------" });
+
+	NativeModules.UIManager.manageChildren(tagText, null, null, [tagRawText], [0], null);
+	NativeModules.UIManager.manageChildren(tagView, null, null, [tagText], [0], null);
+	NativeModules.UIManager.manageChildren(tagRoot, null, null, [tagView], [0], null);
+	NativeModules.UIManager.manageChildren(1, null, null, [tagRoot], [0], null);
+
 }
-
-function run() {
-
-	parse5Adapter.Parse5DomAdapter.makeCurrent();
-
-	bootstrap(HelloWorldComponent, [
-		ReactNativeRenderer,
-		bind(Renderer).toAlias(ReactNativeRenderer)
-	]);
-}
-
-run();
