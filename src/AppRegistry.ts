@@ -1,6 +1,5 @@
 /**
  * @providesModule AppRegistry
- * @flow
  */
 module.exports = {
 	runApplication: function() {

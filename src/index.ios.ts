@@ -4,17 +4,22 @@
  */
 'use strict';
 
-require('RCTDeviceEventEmitter')
+//requiring these here has needed side effects for requiring these later within React Native
+require('RCTDeviceEventEmitter');
+require('RCTEventEmitter');
+//require('RCTLog');
+
 var AppRegistry = require('AppRegistry');
-console.log(AppRegistry);
+var ReactNativeEventEmitter = require('ReactNativeEventEmitter');
 
 var NativeModules = require('NativeModules');
-console.log(NativeModules);
 var ReactNativeTagHandles = require('ReactNativeTagHandles');
 
-var ReactUpdates = require('ReactUpdates');
-ReactUpdates.injection.injectBatchingStrategy(require('ReactDefaultBatchingStrategy'));
-ReactUpdates.ReactReconcileTransaction = require('ReactReconcileTransaction');
+//manual dependency injection for React
+//require('NodeHandle').injection.injectImplementation(require('UniversalWorkerNodeHandle'));
+require('ReactUpdates').injection.injectBatchingStrategy(require('ReactDefaultBatchingStrategy'));
+require('ReactUpdates').ReactReconcileTransaction = require('ReactReconcileTransaction');
+
 
 AppRegistry.runApplication = function() {
 
@@ -25,12 +30,8 @@ AppRegistry.runApplication = function() {
 	NativeModules.UIManager.createView(tagView, "RCTView", { "position": "absolute", "left": 0, "top": 0, "right": 0, "bottom": 0 });
 
 	var tagText = ReactNativeTagHandles.allocateTag();
-	NativeModules.UIManager.createView(tagText, "RCTText", { accessible: true, isHighlighted: false });
+	NativeModules.UIManager.createView(tagText, "RCTTextField", { accessible: true, isHighlighted: false, height: 40, style: { height: 40 }, fontSize: 16, text: "foo" });
 
-	var tagRawText = ReactNativeTagHandles.allocateTag();
-	NativeModules.UIManager.createView(tagRawText, "RCTRawText", { text: "foobar---------" });
-
-	NativeModules.UIManager.manageChildren(tagText, null, null, [tagRawText], [0], null);
 	NativeModules.UIManager.manageChildren(tagView, null, null, [tagText], [0], null);
 	NativeModules.UIManager.manageChildren(tagRoot, null, null, [tagView], [0], null);
 	NativeModules.UIManager.manageChildren(1, null, null, [tagRoot], [0], null);
