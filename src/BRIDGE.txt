@@ -1,5 +1,6 @@
 RCT_EXPORT_METHOD
 =================
+    UIManager
         /**
          * A method to be called from JS, which takes a container ID and then releases
          * all subviews for that container upon receipt.
@@ -115,6 +116,13 @@ RCT_EXPORT_METHOD
                   (NSDictionary *)config
           (RCTResponseSenderBlock)callback
           (RCTResponseSenderBlock)errorCallback
+
+    Timing
+        createTimer
+                      (NSNumber *)callbackID
+                  (NSTimeInterval)jsDuration
+                        (NSDate *)jsSchedulingTime
+                            (BOOL)repeats
 
 RCT_IMPORT_METHOD
 =================
