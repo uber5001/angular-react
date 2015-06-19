@@ -8,19 +8,28 @@ var parse5Adapter = require('angular2/src/dom/parse5_adapter.js');
 require('traceur/bin/traceur-runtime.js');
 require('reflect-metadata/Reflect.js');
 
+require('./reactnative_zone')
+
 import {tagElementMap} from "./native_element";
 import {bind, Renderer, appComponentRefToken, bootstrap} from "angular2/angular2";
 import {internalView} from 'angular2/src/core/compiler/view_ref';
 import {ReactNativeRenderer} from './renderer'
-//replacing the event handlers.
-//This is better than replacing the module itself, because
-//react native's packager gets confused if you have two packages 
-//with the same name.
+
 
 var NativeModules = require('NativeModules');
 var ReactNativeTagHandles = require('ReactNativeTagHandles');
 
-ReactNativeEventEmitter.receiveEvent = function(
+var zone = global.zone;
+
+Object.assign(zone, {
+	afterTask: function() {
+		detectChanges();
+		console.log('%c----------detectChanges-------------', 'background: #000000; color: #ffffff');
+	}
+});
+
+
+ReactNativeEventEmitter.receiveEvent = zone.bind(function(
 	tag: number,
 	topLevelType: string,
 	nativeEventParam
@@ -33,8 +42,7 @@ ReactNativeEventEmitter.receiveEvent = function(
 	console.log(tag, topLevelType.toLowerCase(), nativeEventParam);
 	element.listenerCallback(topLevelType.toLowerCase(), nativeEventParam);
 	// TODO: Don't call detectChanges on events that are not listened to.
-	detectChanges();
-}
+});
 ReactNativeEventEmitter.receiveTouches = function(
 	eventTopLevelType: string,
 	touches: Array<Object>,
