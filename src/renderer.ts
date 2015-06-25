@@ -166,13 +166,12 @@ export class ReactNativeRenderer extends Renderer {
 	}
 
 	_initElementEventListener(bindingIndex: number, element: ReactNativeElement, view: ReactNativeView) {
-		console.log(global.zone);
-		element.listenerCallback = global.zone.bind(function(name, event) {
+		element.setEventListener(global.zone.bind(function(name, event) {
 			var locals = MapWrapper.create();
 			MapWrapper.set(locals, '$event', event);
 			view.eventDispatcher.dispatchEvent(bindingIndex, name, locals);
 			console.log("%cEvent dispatched: ", "color: #22dd22", name, locals);
-		});
+		}));
 	}
 
 	_createBoundTextNodes(proto: DomProtoView, boundElements) {
